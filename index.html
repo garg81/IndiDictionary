@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indi Dictionary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables for theming and colors */
+    :root {
+      --primary-color: #74ebd5; /* Default theme color - used for container background */
+      --title-blue: #003366; /* Darker blue for title text */
+      /* Indian Flag Colors */
+      --saffron: #FF9933;
+      --white: #FFFFFF;
+      --green: #138808; /* Dark Green for credit text */
+      /* Neutral background color */
+      --page-bg-color: #f0f4f8; /* Light grey background for the page */
+      --container-text-color: #333; /* Default text color inside container */
+      --container-secondary-text-color: #555;
+    }
+
+    /* Global Styles */
+    html, body {
+        height: 100%; /* Ensure html and body take full height */
+        margin: 0;
+        padding: 0;
+    }
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      /* Set a static background color for the page */
+      background-color: var(--page-bg-color);
+      box-sizing: border-box;
+      position: relative; /* Needed for absolute positioning of credit */
+    }
+
+    /* Credit Text Styling */
+    .credit-text {
+        position: absolute;
+        top: 10px; /* Adjusted position */
+        right: 10px; /* Adjusted position */
+        font-size: 11px; /* Smaller size for corner */
+        color: var(--title-blue); /* Dark blue text */
+        font-weight: bold; /* Bold */
+        background: linear-gradient(
+          to right, /* Horizontal gradient */
+          var(--saffron) 0%,
+          var(--saffron) 33.3%,
+          var(--white) 33.3%,
+          var(--white) 66.6%,
+          var(--green) 66.6%,
+          var(--green) 100%
+        ); /* Tricolor background */
+        padding: 3px 6px;
+        border-radius: 4px;
+        z-index: 10; /* Ensure it's above other elements */
+        font-style: italic;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2); /* Add a subtle shadow */
+        text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5); /* Add text shadow like title */
+    }
+
+    /* Main container styling */
+    .container {
+      /* Background uses the primary theme color */
+      background: linear-gradient(135deg, var(--primary-color), #ffffff); /* Gradient from theme color to white */
+      width: 100%;
+      min-height: 100vh; /* Ensure it takes at least the full viewport height */
+      padding: 20px; /* Keep internal padding */
+      padding-top: 45px; /* Add padding to avoid overlap with credit */
+      box-shadow: none; /* Remove shadow for full screen */
+      transition: background 0.5s ease-in-out; /* Add transition for background change */
+      box-sizing: border-box; /* Include padding in size */
+      text-align: center; /* Center inline-block elements like the h1 */
+      color: var(--container-text-color); /* Set default text color for container */
+      overflow-y: auto; /* Add scroll if content overflows */
+    }
+
+    /* Title (h1) styling */
+    h1 {
+      font-weight: bold;
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 18px; /* Kept the smallest size */
+      padding: 5px 10px; /* Kept the smallest padding */
+      border-radius: 6px;
+      display: inline-block;
+
+      /* --- Tricolor Background (Indian Flag) --- */
+      background: linear-gradient(
+        to right,
+        var(--saffron) 0%,
+        var(--saffron) 33.3%,
+        var(--white) 33.3%,
+        var(--white) 66.6%,
+        var(--green) 66.6%,
+        var(--green) 100%
+      );
+
+      color: var(--title-blue);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+    }
+
+    /* Search Box layout */
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      text-align: left;
+      max-width: 600px; /* Limit width of search box itself */
+      margin-left: auto; /* Center search box */
+      margin-right: auto; /* Center search box */
+    }
+
+    /* Search input field styling */
+    .search-box input[type="text"] {
+      flex-grow: 1;
+      padding: 12px 15px;
+      /* Default border uses theme color */
+      border: 2px solid var(--primary-color);
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s; /* Added box-shadow transition */
+      box-sizing: border-box;
+      background-color: #ffffff;
+      color: #333;
+    }
+
+    /* Input field focus style */
+    .search-box input[type="text"]:focus {
+      /* Keep theme color border, maybe add a subtle shadow */
+      border-color: var(--primary-color);
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    /* Message Area Styles */
+    .message-area {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: bold;
+        display: none;
+        transition: opacity 0.3s ease-in-out;
+        background-color: rgba(255, 255, 255, 0.7);
+        border: 1px solid transparent;
+        max-width: 600px; /* Limit width */
+        margin-left: auto; /* Center */
+        margin-right: auto; /* Center */
+    }
+    .message-area.error {
+        color: #721c24;
+        border-color: #f5c6cb;
+        background-color: rgba(248, 215, 218, 0.8);
+        display: block;
+    }
+    .message-area.info {
+        color: #0c5460;
+        border-color: #bee5eb;
+        background-color: rgba(209, 236, 241, 0.8);
+        display: block;
+    }
+    .message-area.success {
+        color: #155724;
+        border-color: #c3e6cb;
+        background-color: rgba(212, 237, 218, 0.8);
+        display: block;
+    }
+
+
+    /* General Button Styles */
+    button {
+      padding: 12px 22px;
+      margin: 5px;
+      border: none; /* Remove default border */
+      background: linear-gradient(145deg, #fdfdfd, #e9e9e9);
+      color: #444; /* Default button text color */
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.15), -4px -4px 8px #ffffff;
+      transition: all 0.2s ease-in-out;
+      border: 2px solid transparent; /* Set default border to transparent */
+    }
+
+    /* Button hover effect */
+    button:hover {
+      background: linear-gradient(145deg, #e9e9e9, #fdfdfd);
+      transform: translateY(-1px);
+      box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -5px -5px 10px #ffffff;
+      color: #000;
+    }
+
+    /* Button active (pressed) effect */
+    button:active {
+      transform: translateY(1px);
+      box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.15), inset -3px -3px 6px #ffffff;
+      background: linear-gradient(145deg, #e0e0e0, #f0f0f0);
+      color: #333;
+    }
+
+    /* Specific style for the main search button */
+    #searchBtn {
+        flex-shrink: 0;
+        margin: 0;
+        /* Use theme color for text */
+        color: var(--primary-color);
+        /* Default border uses theme color */
+        border: 2px solid var(--primary-color);
+        /* Adjust padding slightly to account for border */
+        padding: 10px 20px;
+    }
+    /* Update hover for search button */
+    #searchBtn:hover {
+        border-color: var(--primary-color); /* Keep theme border */
+        color: var(--primary-color); /* Keep theme color */
+        /* Optional: slightly change background or shadow on hover */
+        background: linear-gradient(145deg, #f0f0f0, #ffffff);
+    }
+
+
+    /* Dictionary Result Area */
+    #result {
+      margin-top: 25px;
+      padding: 15px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.8);
+      min-height: 50px;
+      text-align: left;
+      color: var(--container-text-color);
+      max-width: 800px; /* Limit result width for readability */
+      margin-left: auto; /* Center result area */
+      margin-right: auto; /* Center result area */
+    }
+
+    /* *** ADDED: Synonyms Section Styling *** */
+    .synonyms-section {
+        padding: 10px 0 15px 0; /* Add padding top/bottom */
+        margin-bottom: 15px; /* Space below */
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Separator line */
+        text-align: left; /* Align text left */
+    }
+    .synonyms-section h3 {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--container-text-color);
+        margin-top: 0;
+        margin-bottom: 8px;
+    }
+    .synonyms-section p {
+        font-size: 15px;
+        color: var(--container-secondary-text-color);
+        line-height: 1.6;
+        margin: 0;
+    }
+    .synonyms-section .no-synonyms {
+        font-style: italic;
+        color: var(--container-secondary-text-color);
+    }
+
+
+    /* Style for the initial word translation */
+     #inputWordTranslation {
+         padding-bottom: 15px;
+         margin-bottom: 15px;
+         border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+         font-size: 22px;
+         font-weight: bold;
+         color: var(--container-text-color);
+     }
+     #inputWordTranslation .label {
+         font-size: 16px;
+         font-weight: normal;
+         color: var(--container-secondary-text-color);
+         display: block;
+         margin-bottom: 5px;
+     }
+     #inputWordTranslation .translation-error {
+         font-size: 16px;
+         font-weight: normal;
+         color: #c0392b;
+     }
+
+    /* Area for English definition details */
+    #englishDefinitionArea { }
+
+    /* Style for the word itself in the definition */
+    .word {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--container-text-color);
+      margin-bottom: 5px;
+    }
+
+    /* Style for phonetics */
+    .phonetics {
+      font-size: 18px;
+      color: var(--container-secondary-text-color);
+      margin-bottom: 15px;
+    }
+
+    /* Style for part of speech headings */
+    .part-of-speech {
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--container-text-color);
+        margin-top: 15px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding-bottom: 5px;
+    }
+
+    /* Style for individual definitions */
+    .definition {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.6);
+      border-left: 4px solid rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      line-height: 1.6;
+      color: var(--container-text-color);
+    }
+    .definition strong {
+        color: var(--container-text-color);
+    }
+
+    /* Style for displaying API errors */
+    .error-message {
+      color: #962d22;
+      text-align: center;
+      font-weight: bold;
+      padding: 10px;
+      background-color: rgba(248, 215, 218, 0.8);
+      border: 1px solid #f5c6cb;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    /* Style for the container holding translated definition text */
+    .translated-content {
+        padding: 10px;
+        background-color: rgba(230, 230, 250, 0.7);
+        border-radius: 5px;
+        margin-bottom: 10px;
+        color: var(--container-text-color);
+    }
+
+    /* Options Section (Translate Buttons) */
+    .options-section {
+      margin-top: 30px;
+      text-align: center;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      max-width: 600px; /* Limit width */
+      margin-left: auto; /* Center */
+      margin-right: auto; /* Center */
+    }
+
+    /* Text within the options section */
+    .options-section p {
+      margin-bottom: 15px;
+      font-size: 18px;
+      color: var(--container-text-color);
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
+    }
+
+    /* Container for the translation buttons */
+    .buttons-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    /* Theme Control Section */
+    #themeControl {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    /* Theme Picker container */
+    #themePicker {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      max-width: 600px; /* Limit width */
+      margin-left: auto; /* Center */
+      margin-right: auto; /* Center */
+    }
+
+    /* Individual theme swatch buttons */
+    .theme-swatch {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 20px;
+      margin: 0;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+      min-width: 80px;
+      text-align: center;
+      color: #000000;
+    }
+
+    /* Theme swatch hover effect */
+    .theme-swatch:hover {
+      transform: scale(1.05);
+      box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 600px) {
+        .container { padding: 15px; padding-top: 40px; } /* Adjust padding */
+        .credit-text {
+             top: 8px; /* Adjust position */
+             right: 8px; /* Adjust position */
+             font-size: 10px; /* Smaller */
+        }
+        h1 {
+            font-size: 16px;
+            padding: 4px 8px;
+            margin-bottom: 15px;
+        }
+        .search-box { flex-direction: column; gap: 10px; max-width: 95%; } /* Adjust width */
+        .search-box input[type="text"] { font-size: 15px; }
+        /* Adjust button padding for border */
+        button { padding: 10px 18px; font-size: 15px; }
+        #searchBtn { padding: 8px 16px; } /* Adjusted padding */
+        #result { max-width: 95%; } /* Adjust width */
+        .synonyms-section h3 { font-size: 16px; }
+        .synonyms-section p { font-size: 14px; }
+        #inputWordTranslation { font-size: 20px; }
+        .word { font-size: 24px; }
+        .phonetics { font-size: 16px; }
+        .part-of-speech { font-size: 18px; }
+        .definition { padding: 10px; font-size: 14px; }
+        .options-section { max-width: 95%; } /* Adjust width */
+        .options-section p { font-size: 16px; }
+        #themePicker { max-width: 95%; } /* Adjust width */
+        .theme-swatch { font-size: 13px; padding: 6px 12px; min-width: 70px; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="credit-text">By Ajay Garg</div>
+
+  <div class="container">
+    <h1>Indi Dictionary</h1>
+
+    <div id="messageArea" class="message-area"></div>
+
+    <div class="search-box">
+      <input type="text" id="wordInput" placeholder="Type an English word..." aria-label="Word to search"/>
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="result">
+        <div id="synonymsArea" class="synonyms-section" style="display: none;"></div>
+
+        <div id="inputWordTranslation"></div>
+        <div id="englishDefinitionArea"></div>
+    </div>
+
+    <div id="translateSection" class="options-section" style="display: none;">
+      <p>Translate English definition to:</p>
+      <div class="buttons-container">
+        <button onclick="translateEnglishDefinition('hi')">Hindi</button>
+        <button onclick="translateEnglishDefinition('pa')">Punjabi</button>
+        <button onclick="translateEnglishDefinition('mr')">Marathi</button>
+        <button onclick="translateEnglishDefinition('ur')">Urdu</button>
+        <button onclick="translateEnglishDefinition('ta')">Tamil</button>
+        <button onclick="translateEnglishDefinition('te')">Telugu</button>
+        <button onclick="translateEnglishDefinition('sa')">Sanskrit</button>
+      </div>
+    </div>
+
+    <div id="themeControl">
+      <button id="themeToggleBtn">Change Theme</button>
+    </div>
+
+    <div id="themePicker" style="display: none;">
+        </div>
+  </div>
+
+  <script>
+    // DOM Element References
+    const wordInput = document.getElementById('wordInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultDiv = document.getElementById('result');
+    const synonymsArea = document.getElementById('synonymsArea'); // *** ADDED ***
+    const inputWordTranslationDiv = document.getElementById('inputWordTranslation');
+    const englishDefinitionDiv = document.getElementById('englishDefinitionArea');
+    const translateSection = document.getElementById('translateSection');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themePicker = document.getElementById('themePicker');
+    const messageArea = document.getElementById('messageArea');
+
+    // Variable to store the original HTML of the English definition
+    let originalEnglishDefinitionHTML = "";
+
+    // --- Utility Functions ---
+
+    /**
+     * Displays a message in the message area.
+     * @param {string} message - The message text to display.
+     * @param {string} [type='info'] - The type of message ('info', 'error', 'success').
+     */
+    function showMessage(message, type = 'info') {
+        messageArea.textContent = message;
+        messageArea.className = `message-area ${type}`; // Set class for styling
+        messageArea.style.display = 'block'; // Make it visible
+    }
+
+    /**
+     * Hides the message area.
+     */
+    function hideMessage() {
+        messageArea.style.display = 'none';
+        messageArea.textContent = '';
+        messageArea.className = 'message-area'; // Reset classes
+    }
+
+    /**
+     * Translates text using the Google Translate API.
+     * @param {string} text - The text to translate.
+     * @param {string} targetLang - The target language code (e.g., 'hi', 'pa').
+     * @param {string} [sourceLang='en'] - The source language code (e.g., 'en').
+     * @returns {Promise<string>} A promise that resolves with the translated text.
+     */
+    function translateText(text, targetLang, sourceLang = 'en') {
+        return new Promise((resolve, reject) => {
+            // Basic validation
+            if (!text || !text.trim()) {
+                return reject(new Error('No text provided for translation.'));
+            }
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Translation service failed (status: ${response.status}). Check network or API limits.`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const translatedText = data[0]?.map(segment => segment[0]).join('');
+                    if (translatedText) {
+                        resolve(translatedText);
+                    } else {
+                        console.warn("Translation API returned empty result for:", text);
+                        reject(new Error('Translation service returned an empty result.'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Translation Error:', error);
+                    reject(new Error(`Translation failed: ${error.message}`));
+                });
+        });
+    }
+
+    // --- Core Functionality ---
+
+    /**
+     * Orchestrates the word search process - UPDATED WORKFLOW.
+     * @param {string} word - The English word to search for.
+     */
+    async function searchWordWorkflow(word) {
+        hideMessage(); // Clear previous messages
+        // Clear previous results immediately
+        synonymsArea.innerHTML = '';
+        synonymsArea.style.display = 'none';
+        inputWordTranslationDiv.innerHTML = '';
+        englishDefinitionDiv.innerHTML = '<p>Loading definition...</p>'; // Show loading for definition
+        translateSection.style.display = 'none';
+        originalEnglishDefinitionHTML = "";
+
+        let definitionData = null;
+        let hindiTranslation = "";
+        let definitionError = null;
+        let translationError = null;
+
+        // Step 1: Fetch English definition data (contains synonyms)
+        try {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error(`Sorry, the English definition for "${word}" could not be found.`);
+                } else {
+                    let errorData;
+                    try { errorData = await response.json(); } catch(e) {/* ignore */}
+                    const apiMessage = errorData?.title || errorData?.message || `Status: ${response.status}`;
+                    throw new Error(`Failed to fetch the English definition. ${apiMessage}`);
+                }
+            }
+            definitionData = await response.json(); // Store data if successful
+            englishDefinitionDiv.innerHTML = ''; // Clear loading message
+        } catch (error) {
+            console.error("English Definition Fetch Error:", error);
+            definitionError = error; // Store error
+            englishDefinitionDiv.innerHTML = ''; // Clear loading message
+        }
+
+        // Step 2: Translate input word to Hindi (can happen concurrently or after)
+        try {
+            hindiTranslation = await translateText(word, 'hi', 'en');
+        } catch (error) {
+            console.error("Hindi Translation Error:", error);
+            translationError = error; // Store error
+        }
+
+        // Step 3: Display results based on what was successful
+
+        // Display Synonyms (if definition data exists)
+        if (definitionData) {
+            displaySynonyms(definitionData);
+        }
+
+        // Display Hindi Translation
+        if (hindiTranslation) {
+             inputWordTranslationDiv.innerHTML = `<span class="label">Hindi Translation:</span> ${hindiTranslation}`;
+        } else if (translationError) {
+             inputWordTranslationDiv.innerHTML = `<span class="label">Hindi Translation:</span> <span class="translation-error">Could not translate "${word}" to Hindi. ${translationError.message}</span>`;
+        } else {
+             inputWordTranslationDiv.innerHTML = ''; // Clear if no translation and no error
+        }
+
+
+        // Display English Definition (if data exists)
+        if (definitionData) {
+            displayEnglishDefinitionDetails(definitionData); // Display the main definition part
+            translateSection.style.display = 'block'; // Show translation buttons
+        } else if (definitionError) {
+            // Display definition error if fetch failed
+            englishDefinitionDiv.innerHTML = `<p class="error-message">Error fetching English definition: ${definitionError.message}</p>`;
+            translateSection.style.display = 'none'; // Keep translation buttons hidden
+        }
+    }
+
+    /**
+     * Extracts and displays synonyms from the API data.
+     * @param {Array} data - The array of dictionary entries from the API.
+     */
+    function displaySynonyms(data) {
+        let allSynonyms = new Set(); // Use a Set to avoid duplicates
+
+        if (data && data.length > 0) {
+            data.forEach(entry => {
+                entry.meanings.forEach(meaning => {
+                    meaning.definitions.forEach(def => {
+                        if (def.synonyms && def.synonyms.length > 0) {
+                            def.synonyms.forEach(syn => allSynonyms.add(syn));
+                        }
+                    });
+                    // Also check for synonyms directly under the meaning (less common in this API)
+                    if (meaning.synonyms && meaning.synonyms.length > 0) {
+                         meaning.synonyms.forEach(syn => allSynonyms.add(syn));
+                    }
+                });
+            });
+        }
+
+        synonymsArea.innerHTML = ''; // Clear previous synonyms
+        if (allSynonyms.size > 0) {
+            const synonymsList = Array.from(allSynonyms).join(', ');
+            synonymsArea.innerHTML = `<h3>Synonyms:</h3><p>${synonymsList}</p>`;
+            synonymsArea.style.display = 'block'; // Make the section visible
+        } else {
+            // Optional: Display a message if no synonyms are found
+            // synonymsArea.innerHTML = `<p class="no-synonyms">No synonyms found.</p>`;
+            // synonymsArea.style.display = 'block';
+            // Or simply hide the section if no synonyms:
+            synonymsArea.style.display = 'none';
+        }
+    }
+
+
+    /**
+     * Displays the main English dictionary details (word, phonetics, meanings) in the UI.
+     * This function is called *after* synonyms are handled.
+     * @param {Array} data - The array of dictionary entries from the API.
+     */
+    function displayEnglishDefinitionDetails(data) {
+        englishDefinitionDiv.innerHTML = ""; // Clear previous definition details
+        const entry = data[0]; // Use the first entry
+
+        // Display the word
+        const wordEl = document.createElement('div');
+        wordEl.className = 'word';
+        wordEl.textContent = entry.word;
+        englishDefinitionDiv.appendChild(wordEl);
+
+        // Display phonetics if available
+        const phonetic = entry.phonetics?.find(p => p.text)?.text;
+        if (phonetic) {
+            const phoneticsEl = document.createElement('div');
+            phoneticsEl.className = 'phonetics';
+            phoneticsEl.textContent = phonetic;
+            englishDefinitionDiv.appendChild(phoneticsEl);
+        }
+
+        // Loop through meanings (parts of speech)
+        entry.meanings.forEach(meaning => {
+            const posEl = document.createElement('h3');
+            posEl.className = 'part-of-speech';
+            posEl.textContent = meaning.partOfSpeech;
+            englishDefinitionDiv.appendChild(posEl);
+
+            // Loop through definitions for this part of speech
+            meaning.definitions.forEach((def, index) => {
+                // Display the definition text
+                const defEl = document.createElement('div');
+                defEl.className = 'definition';
+                defEl.textContent = (meaning.definitions.length > 1 ? `${index + 1}. ` : '') + def.definition;
+                englishDefinitionDiv.appendChild(defEl);
+
+                // Display example sentence if available
+                if (def.example) {
+                    const exampleEl = document.createElement('p');
+                    exampleEl.style.fontStyle = 'italic';
+                    exampleEl.style.marginLeft = '15px';
+                    exampleEl.style.color = '#666';
+                    exampleEl.textContent = `Example: ${def.example}`;
+                    englishDefinitionDiv.appendChild(exampleEl);
+                }
+                // Display synonyms *within* the definition block (optional redundancy, consider removing if synonyms section is enough)
+                // if (def.synonyms && def.synonyms.length > 0) {
+                //     const synEl = document.createElement('p');
+                //     synEl.style.marginLeft = '15px';
+                //     synEl.style.fontSize = '0.9em';
+                //     synEl.innerHTML = `<strong>Synonyms:</strong> ${def.synonyms.join(', ')}`;
+                //     englishDefinitionDiv.appendChild(synEl);
+                // }
+                 // Display antonyms if available
+                if (def.antonyms && def.antonyms.length > 0) {
+                    const antEl = document.createElement('p');
+                    antEl.style.marginLeft = '15px';
+                    antEl.style.fontSize = '0.9em';
+                    antEl.innerHTML = `<strong>Antonyms:</strong> ${def.antonyms.join(', ')}`;
+                    englishDefinitionDiv.appendChild(antEl);
+                }
+            });
+             // Display antonyms directly under meaning (less common)
+             if (meaning.antonyms && meaning.antonyms.length > 0) {
+                 const antMeaningEl = document.createElement('p');
+                 antMeaningEl.style.marginLeft = '0px'; // Align with POS
+                 antMeaningEl.style.fontSize = '0.9em';
+                 antMeaningEl.style.marginTop = '5px';
+                 antMeaningEl.innerHTML = `<strong>Antonyms (${meaning.partOfSpeech}):</strong> ${meaning.antonyms.join(', ')}`;
+                 englishDefinitionDiv.appendChild(antMeaningEl);
+             }
+        });
+
+        // Store the generated HTML for the definition part only
+        originalEnglishDefinitionHTML = englishDefinitionDiv.innerHTML;
+    }
+
+    /**
+     * Translates the currently displayed English definition to the target language.
+     * @param {string} targetLang - The target language code (e.g., 'hi', 'pa').
+     */
+    async function translateEnglishDefinition(targetLang) {
+        const tempDiv = document.createElement('div');
+        // Use the stored original HTML which excludes synonyms
+        tempDiv.innerHTML = originalEnglishDefinitionHTML;
+        const originalText = tempDiv.innerText || tempDiv.textContent;
+
+        if (!originalText || !originalText.trim()) {
+            showMessage('No English definition available to translate.', 'info');
+            return;
+        }
+
+        // Show translating indicator only in the definition area
+        englishDefinitionDiv.innerHTML = '<p>Translating definition...</p>';
+
+        try {
+            const translatedText = await translateText(originalText, targetLang, 'en');
+            // Display translated text in the definition area
+            englishDefinitionDiv.innerHTML = `<div class="translated-content">${translatedText.replace(/\n/g, '<br>')}</div>`;
+
+            const showOriginalBtn = document.createElement('button');
+            showOriginalBtn.textContent = 'Show Original English Definition';
+            showOriginalBtn.style.marginTop = '15px';
+            showOriginalBtn.onclick = function() {
+                // Restore only the definition part
+                englishDefinitionDiv.innerHTML = originalEnglishDefinitionHTML;
+                hideMessage();
+            };
+            // Append button to the definition area
+            englishDefinitionDiv.appendChild(showOriginalBtn);
+
+            let langName = targetLang; // Default to code if not found
+            const langMap = {
+                'hi': 'Hindi', 'pa': 'Punjabi', 'mr': 'Marathi', 'ur': 'Urdu',
+                'ta': 'Tamil', 'te': 'Telugu', 'sa': 'Sanskrit'
+            };
+            if (langMap[targetLang]) {
+                langName = langMap[targetLang];
+            }
+
+            showMessage(`English definition translated to ${langName}.`, 'success');
+        } catch (error) {
+            showMessage(`Translation Error: ${error.message}`, 'error');
+            // Restore the original English definition on error
+            englishDefinitionDiv.innerHTML = originalEnglishDefinitionHTML;
+        }
+    }
+
+    // --- Theme Change Functionality ---
+
+    /**
+     * Changes the application theme color by updating the CSS variable.
+     * @param {string} newColor - The new primary color hex string.
+     */
+    function changeTheme(newColor) {
+        document.documentElement.style.setProperty('--primary-color', newColor);
+        themePicker.style.display = 'none';
+    }
+
+    // Available themes
+    const themes = [
+        {name: "Teal", color: "#74ebd5"}, {name: "Red", color: "#ff6b6b"},
+        {name: "Sky Blue", color: "#6bc1ff"}, {name: "Yellow", color: "#ffd93d"},
+        {name: "Orange", color: "#ff9a76"}, {name: "Purple", color: "#a29bfe"},
+        {name: "Green", color: "#00b894"}, {name: "Blue", color: "#0984e3"},
+        {name: "Pink", color: "#fd79a8"}, {name: "Indigo", color: "#6c5ce7"},
+        {name: "Dark Red", color: "#c0392b"}, {name: "Dark Green", color: "#16a085"},
+        {name: "Dark Blue", color: "#2980b9"}, {name: "Dark Pink", color: "#d81b60"},
+        {name: "Dark Yellow", color: "#f39c12"}
+    ];
+
+    /**
+     * Populates the theme picker div with theme swatch buttons.
+     */
+    function populateThemePicker() {
+        themePicker.innerHTML = "";
+        themes.forEach(theme => {
+            const btn = document.createElement('button');
+            btn.className = 'theme-swatch';
+            btn.style.backgroundColor = theme.color;
+            btn.style.color = '#000000';
+            btn.textContent = theme.name;
+            btn.setAttribute('aria-label', `Set theme to ${theme.name}`);
+            btn.onclick = () => changeTheme(theme.color);
+            themePicker.appendChild(btn);
+        });
+    }
+
+    // --- Event Listeners ---
+
+    // Search button click handler
+    searchBtn.addEventListener('click', function() {
+        const word = wordInput.value.trim().toLowerCase();
+        if (!word) {
+            showMessage('Please enter an English word to search.', 'info');
+            return;
+        }
+        searchWordWorkflow(word);
+    });
+
+    // Allow searching by pressing Enter
+    wordInput.addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            searchBtn.click();
+        }
+    });
+
+    // Theme toggle button click handler
+    themeToggleBtn.addEventListener('click', function() {
+        const isHidden = themePicker.style.display === "none" || !themePicker.style.display;
+        if (isHidden) {
+            populateThemePicker();
+            themePicker.style.display = "flex";
+        } else {
+            themePicker.style.display = "none";
+        }
+    });
+
+    // Close theme picker on click outside
+    document.addEventListener('click', function(event) {
+        if (!themeToggleBtn.contains(event.target) && !themePicker.contains(event.target) && themePicker.style.display === 'flex') {
+            themePicker.style.display = 'none';
+        }
+    });
+
+    // --- Initial Setup ---
+    const initialColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+    changeTheme(initialColor || '#74ebd5');
+
+  </script>
+</body>
+</html>
